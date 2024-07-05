@@ -1,1 +1,41 @@
+#include <xc.h>
+config OSC = INTIO1
+config BOR = OFF
+config STVREN = OFF
+config WDT = OFF
+config MCLRE = ON 
+#include <xc.inc>
 
+goto start
+
+ psect data
+
+lookup: DB 0x81,0xCF,0x86,0xC,0xA4,0xA0,0x8F,0x80,0x84
+
+ psect code
+
+SSEG   EQU 0x41
+ 
+I    EQU 0x70 
+    
+start:    
+movlw    low lookup
+movwf    TBLPTRL, a
+movlw    high lookup
+movwf    TBLPTRH, a
+movlw    low highword lookup
+movwf    TBLPTRU , a
+
+
+setf ADCON1, a
+clrf TRISA,a
+setf TRISB,a
+    
+    
+    
+infiniteloop:
+  movf	PORTB, w, a 
+	andlw	0x0f	    
+	call	bcd2sseg, 0
+	movwf	PORTA, a
+	bra	infiniteloop  
