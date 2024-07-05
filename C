@@ -1,1 +1,74 @@
+#include <xc.h>
+config OSC = INTIO1
+config BOR = OFF
+config STVREN = OFF
+config WDT = OFF
+config MCLRE = ON 
+#include <xc.inc>
 
+void delay_ms(unsigned int milliseconds) {
+    while (milliseconds > 0) {
+        __delay_ms(1);
+        milliseconds--;
+    }
+}
+
+void toggleNegativeSign() {
+    LATAbits.LATA0 = !LATAbits.LATA0;
+}
+
+void rotateClockwise() {
+    unsigned char pattern = 0b00000011;
+    unsigned char temp;
+
+    while (1) {
+        temp = pattern;
+        LATA = pattern;
+        pattern = (pattern << 1) | (temp >> 6);
+        delay_ms(500);
+    }
+}
+
+void rotateCounterClockwise() {
+    unsigned char pattern = 0b00000011;
+    unsigned char temp;
+
+    while (1) {
+        temp = pattern;
+        LATA = pattern;
+        pattern = (pattern >> 1) | (temp << 6);
+        delay_ms(500);
+    }
+}
+
+void main(void) {
+    
+    TRISA = 0x00;
+    TRISD = 0xFF;
+    LATA = 0x00;
+
+    while (1) {
+        unsigned char switches = PORTD & 0x03;
+
+        switch (switches) {
+            case 0x00:
+              
+                LATA = 0x00;
+                break;
+            case 1:
+                toggleNegativeSign();
+                delay_ms(500);
+                break;
+            case 2:
+                // Rotate  clockwise
+                rotateClockwise();
+                break;
+            case 3:
+                // Rotate counterclockwise
+                rotateCounterClockwise();
+                break;
+            default:
+                break;
+        }
+    }
+}
